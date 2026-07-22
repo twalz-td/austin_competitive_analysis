@@ -85,6 +85,11 @@ html,body{height:100%;font-family:"Inter",sans-serif;background:#EDE8E5;color:va
 .dest-token{position:absolute;transform:translate(-50%,-50%);cursor:default;text-align:center}
 .tok-dot{border-radius:50%;margin:0 auto}
 .tok-name{font-family:"Space Mono",monospace;text-align:center;margin-top:3px;line-height:1.2;white-space:nowrap}
+
+.map-tok{position:absolute;transform:translate(-50%,-50%);z-index:10;transition:left .5s ease-in-out,top .5s ease-in-out;overflow:visible}
+.tok-ring{position:absolute;inset:-14px;border-radius:50%;border:1.5px solid currentColor;opacity:.38;pointer-events:none}
+.tok-dot{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#fff;letter-spacing:.02em;user-select:none;position:relative;z-index:1}
+.note{font-size:11px;color:var(--faint)}
 </style>
 </head>
 <body>
@@ -810,37 +815,34 @@ const BRANDS={
   }
 };
 
-const AXES={
-  'Accessibility':{l:'High Effort / Long Haul',r:'Easy / Short Haul'},
-  'Price Point':{l:'Premium / Luxury',r:'Budget Friendly'},
-  'Season Versatility':{l:'Single Season Specialist',r:'Four Season Destination'},
-  'Brand Recognition':{l:'Emerging / Niche',r:'Globally Iconic'},
-  'Adventure Level':{l:'Relaxation / Passive',r:'Active / Adventure'},
-  'Crowd Level':{l:'Peak Season Crowded',r:'Uncrowded / Exclusive'},
-  'Cultural Authenticity':{l:'Touristified / Resort Bubble',r:'Genuinely Local / Authentic'},
-  'Culinary Scene':{l:'Generic / Chains',r:'World-Class / Distinctive'},
-  'Nightlife Energy':{l:'Quiet / Family',r:'Vibrant / 24-Hour'},
-  'Outdoor Access':{l:'Urban / City Only',r:'Immediate Nature Access'},
-  'Music Depth':{l:'Limited / Curated',r:'Deep / Living Music Culture'},
-  'Event Draw':{l:'No Flagship Events',r:'Must-Attend Events Calendar'}
-};
 
-const SCORES={
-  austin:{'Accessibility':7,'Price Point':-2,'Season Versatility':4,'Brand Recognition':6,'Adventure Level':3,'Crowd Level':-4,'Cultural Authenticity':1,'Culinary Scene':8,'Nightlife Energy':7,'Outdoor Access':2,'Music Depth':9,'Event Draw':9},
-  nashville:{'Accessibility':7,'Price Point':1,'Season Versatility':5,'Brand Recognition':7,'Adventure Level':1,'Crowd Level':-6,'Cultural Authenticity':-2,'Culinary Scene':5,'Nightlife Energy':9,'Outdoor Access':-1,'Music Depth':7,'Event Draw':5},
-  denver:{'Accessibility':5,'Price Point':-1,'Season Versatility':8,'Brand Recognition':5,'Adventure Level':8,'Crowd Level':2,'Cultural Authenticity':4,'Culinary Scene':4,'Nightlife Energy':4,'Outdoor Access':10,'Music Depth':4,'Event Draw':3},
-  neworleans:{'Accessibility':5,'Price Point':3,'Season Versatility':3,'Brand Recognition':7,'Adventure Level':2,'Crowd Level':-2,'Cultural Authenticity':6,'Culinary Scene':9,'Nightlife Energy':8,'Outdoor Access':-2,'Music Depth':8,'Event Draw':6},
-  sanantonio:{'Accessibility':6,'Price Point':4,'Season Versatility':4,'Brand Recognition':4,'Adventure Level':3,'Crowd Level':1,'Cultural Authenticity':5,'Culinary Scene':5,'Nightlife Energy':3,'Outdoor Access':1,'Music Depth':2,'Event Draw':3},
-  dallas:{'Accessibility':7,'Price Point':-3,'Season Versatility':5,'Brand Recognition':4,'Adventure Level':2,'Crowd Level':2,'Cultural Authenticity':-1,'Culinary Scene':5,'Nightlife Energy':5,'Outdoor Access':-1,'Music Depth':2,'Event Draw':4},
-  savannah:{'Accessibility':4,'Price Point':3,'Season Versatility':3,'Brand Recognition':5,'Adventure Level':1,'Crowd Level':3,'Cultural Authenticity':7,'Culinary Scene':6,'Nightlife Energy':3,'Outdoor Access':1,'Music Depth':2,'Event Draw':2},
-  charleston:{'Accessibility':4,'Price Point':-1,'Season Versatility':4,'Brand Recognition':6,'Adventure Level':2,'Crowd Level':1,'Cultural Authenticity':5,'Culinary Scene':8,'Nightlife Energy':4,'Outdoor Access':2,'Music Depth':2,'Event Draw':3},
-  portland:{'Accessibility':4,'Price Point':2,'Season Versatility':5,'Brand Recognition':5,'Adventure Level':6,'Crowd Level':3,'Cultural Authenticity':5,'Culinary Scene':7,'Nightlife Energy':5,'Outdoor Access':6,'Music Depth':5,'Event Draw':3},
-  chicago:{'Accessibility':6,'Price Point':-4,'Season Versatility':6,'Brand Recognition':8,'Adventure Level':3,'Crowd Level':-3,'Cultural Authenticity':6,'Culinary Scene':9,'Nightlife Energy':7,'Outdoor Access':1,'Music Depth':6,'Event Draw':6},
-  newyork:{'Accessibility':7,'Price Point':-8,'Season Versatility':8,'Brand Recognition':10,'Adventure Level':4,'Crowd Level':-8,'Cultural Authenticity':5,'Culinary Scene':10,'Nightlife Energy':9,'Outdoor Access':-2,'Music Depth':8,'Event Draw':7},
-  miami:{'Accessibility':5,'Price Point':-5,'Season Versatility':5,'Brand Recognition':8,'Adventure Level':4,'Crowd Level':-5,'Cultural Authenticity':2,'Culinary Scene':7,'Nightlife Energy':9,'Outdoor Access':3,'Music Depth':4,'Event Draw':6},
-  cancun:{'Accessibility':5,'Price Point':2,'Season Versatility':2,'Brand Recognition':7,'Adventure Level':3,'Crowd Level':-5,'Cultural Authenticity':-3,'Culinary Scene':3,'Nightlife Energy':5,'Outdoor Access':4,'Music Depth':1,'Event Draw':1},
-  reykjavik:{'Accessibility':-4,'Price Point':-7,'Season Versatility':3,'Brand Recognition':7,'Adventure Level':8,'Crowd Level':1,'Cultural Authenticity':7,'Culinary Scene':4,'Nightlife Energy':3,'Outdoor Access':10,'Music Depth':3,'Event Draw':2}
+const AXES={
+  'Music Depth':{
+    l:'Limited / Curated',r:'Deep / Living Music Culture',
+    s:{austin:9,nashville:7,denver:4,neworleans:8,sanantonio:2,dallas:2,galveston:0,southpadre:-1,savannah:2,charleston:2,portland:5,chicago:6,newyork:8,miami:4,cancun:1,reykjavik:3}
+  },
+  'Event Draw':{
+    l:'No Flagship Events',r:'Must-Attend Events Calendar',
+    s:{austin:9,nashville:5,denver:3,neworleans:6,sanantonio:3,dallas:4,galveston:0,southpadre:1,savannah:2,charleston:3,portland:3,chicago:6,newyork:7,miami:6,cancun:1,reykjavik:2}
+  },
+  'Cultural Authenticity':{
+    l:'Touristified / Resort Bubble',r:'Genuinely Local / Authentic',
+    s:{austin:1,nashville:-2,denver:4,neworleans:6,sanantonio:5,dallas:-1,galveston:-2,southpadre:-4,savannah:7,charleston:5,portland:5,chicago:6,newyork:5,miami:2,cancun:-3,reykjavik:7}
+  },
+  'Culinary Scene':{
+    l:'Generic / Chains',r:'World-Class / Distinctive',
+    s:{austin:8,nashville:5,denver:4,neworleans:9,sanantonio:5,dallas:5,galveston:1,southpadre:0,savannah:6,charleston:8,portland:7,chicago:9,newyork:10,miami:7,cancun:3,reykjavik:4}
+  },
+  'Price Point':{
+    l:'Budget Friendly',r:'Premium / Luxury',
+    s:{austin:2,nashville:1,denver:1,neworleans:-3,sanantonio:-4,dallas:3,galveston:-5,southpadre:-4,savannah:-3,charleston:1,portland:-2,chicago:4,newyork:8,miami:5,cancun:-2,reykjavik:7}
+  },
+  'Outdoor Access':{
+    l:'Urban / City Only',r:'Immediate Nature Access',
+    s:{austin:2,nashville:-1,denver:10,neworleans:-2,sanantonio:1,dallas:-1,galveston:4,southpadre:5,savannah:1,charleston:2,portland:6,chicago:1,newyork:-2,miami:3,cancun:4,reykjavik:10}
+  }
 };
+const AK=Object.keys(AXES);
 
 const NAMED={
   'Easy / Short Haul|Vibrant / 24-Hour':'The Party is Here','High Effort / Long Haul|Vibrant / 24-Hour':'Worth the Late Night',
@@ -883,6 +885,71 @@ const NAMED={
 function getQuadrants(xAxis,yAxis){
   const xd=AXES[xAxis],yd=AXES[yAxis];
   const lk=(x,y)=>NAMED[x+'|'+y]||NAMED[y+'|'+x]||'';
+  return{tr:lk(xd.r,yd.r),tl:lk(xd.l,yd.r),br:lk(xd.r,yd.l),bl:lk(xd.l,yd.l)};
+}
+
+
+function getQuadrantNames(xAxis,yAxis){
+  const xd=AXES[xAxis],yd=AXES[yAxis];
+  const NAMED={
+    'Deep / Living Music Culture|Must-Attend Events Calendar':'Culture Capital',
+    'Limited / Curated|Must-Attend Events Calendar':'Big Events, Small Scene',
+    'Deep / Living Music Culture|No Flagship Events':'Hidden Music Scene',
+    'Limited / Curated|No Flagship Events':'Quiet & Forgettable',
+    'Deep / Living Music Culture|Genuinely Local / Authentic':'Living Music Scene',
+    'Limited / Curated|Genuinely Local / Authentic':'Local Gem, Low Volume',
+    'Deep / Living Music Culture|Touristified / Resort Bubble':'Music for Tourists',
+    'Limited / Curated|Touristified / Resort Bubble':'Tourist Trap',
+    'Deep / Living Music Culture|World-Class / Distinctive':'Culture & Cuisine Capital',
+    'Limited / Curated|World-Class / Distinctive':'Great Food, No Soundtrack',
+    'Deep / Living Music Culture|Generic / Chains':'Music Without the Meal',
+    'Limited / Curated|Generic / Chains':'Safe & Forgettable',
+    'Must-Attend Events Calendar|Genuinely Local / Authentic':'Authentic Event City',
+    'No Flagship Events|Genuinely Local / Authentic':'Hidden Local World',
+    'Must-Attend Events Calendar|Touristified / Resort Bubble':'Big Events, Fake City',
+    'No Flagship Events|Touristified / Resort Bubble':'All Tourism, No Reason',
+    'Must-Attend Events Calendar|World-Class / Distinctive':'Destination City',
+    'No Flagship Events|World-Class / Distinctive':'Quietly Exceptional',
+    'Must-Attend Events Calendar|Generic / Chains':'Crowded & Underfed',
+    'No Flagship Events|Generic / Chains':'Generic Everywhere',
+    'Genuinely Local / Authentic|World-Class / Distinctive':'The Real Deal',
+    'Touristified / Resort Bubble|World-Class / Distinctive':'Polished But Hollow',
+    'Genuinely Local / Authentic|Generic / Chains':'Authentic But Undiscovered',
+    'Touristified / Resort Bubble|Generic / Chains':'Tourism Industrial Complex',
+    'Genuinely Local / Authentic|Premium / Luxury':'Boutique Authenticity',
+    'Touristified / Resort Bubble|Premium / Luxury':'Expensive Theme Park',
+    'Genuinely Local / Authentic|Budget Friendly':'Hidden Value',
+    'Touristified / Resort Bubble|Budget Friendly':'Cheap Tourist Trap',
+    'World-Class / Distinctive|Premium / Luxury':'Expense Account Required',
+    'Generic / Chains|Premium / Luxury':'Overpriced & Generic',
+    'World-Class / Distinctive|Budget Friendly':'Best Value Food City',
+    'Generic / Chains|Budget Friendly':'Cheap & Forgettable',
+    'Must-Attend Events Calendar|Premium / Luxury':'Prestige Events',
+    'No Flagship Events|Premium / Luxury':'Expensive & Quiet',
+    'Must-Attend Events Calendar|Budget Friendly':'Value Festival City',
+    'No Flagship Events|Budget Friendly':'Affordable Quiet',
+    'Deep / Living Music Culture|Premium / Luxury':'Premium Music Experience',
+    'Limited / Curated|Premium / Luxury':'Expensive Without Culture',
+    'Deep / Living Music Culture|Budget Friendly':'Affordable Music City',
+    'Limited / Curated|Budget Friendly':'Budget & Boring',
+    'Immediate Nature Access|Must-Attend Events Calendar':'Adventure + Events',
+    'Urban / City Only|Must-Attend Events Calendar':'City Events Hub',
+    'Immediate Nature Access|No Flagship Events':'Nature Retreat',
+    'Urban / City Only|No Flagship Events':'Unremarkable City',
+    'Immediate Nature Access|Deep / Living Music Culture':'Wild & Musical',
+    'Urban / City Only|Deep / Living Music Culture':'City Music Scene',
+    'Immediate Nature Access|Genuinely Local / Authentic':'Authentic Wild',
+    'Urban / City Only|Genuinely Local / Authentic':'Real Urban Culture',
+    'Immediate Nature Access|Touristified / Resort Bubble':'Nature Resort Bubble',
+    'Urban / City Only|Touristified / Resort Bubble':'Urban Tourist Trap',
+    'Immediate Nature Access|World-Class / Distinctive':'Eat Well, Sleep Outside',
+    'Urban / City Only|World-Class / Distinctive':'City That Feeds You Well',
+    'Immediate Nature Access|Premium / Luxury':'Luxury Wilderness',
+    'Urban / City Only|Premium / Luxury':'City Luxury',
+    'Immediate Nature Access|Budget Friendly':'Affordable Adventure',
+    'Urban / City Only|Budget Friendly':'City on a Budget',
+  };
+  const lk=(x,y)=>NAMED[`${x}|${y}`]||NAMED[`${y}|${x}`]||'';
   return{tr:lk(xd.r,yd.r),tl:lk(xd.l,yd.r),br:lk(xd.r,yd.l),bl:lk(xd.l,yd.l)};
 }
 
@@ -1016,78 +1083,122 @@ function rBC(){
   </div>`;
 }
 
+
 function rXS(){
-  const an=Object.keys(AXES);
-  const mo=(cur,ex)=>an.map(a=>`<option value="${a}"${a===cur?' selected':''}${a===ex?' disabled':''}>${a}</option>`).join('');
-  g('sidebar').innerHTML=`
-    <div class="lbl sec-head">Axis Selection</div>
-    <div class="lbl" style="margin:8px 0 4px">X Axis</div>
-    <select class="ax-select" onchange="setAx('x',this.value)">${mo(S.xAxis,S.yAxis)}</select>
-    <div style="margin-bottom:12px"><span class="aep">${AXES[S.xAxis].l}</span><span class="aep">${AXES[S.xAxis].r}</span></div>
-    <div class="lbl" style="margin:8px 0 4px">Y Axis</div>
-    <select class="ax-select" onchange="setAx('y',this.value)">${mo(S.yAxis,S.xAxis)}</select>
-    <div style="margin-bottom:12px"><span class="aep">${AXES[S.yAxis].l}</span><span class="aep">${AXES[S.yAxis].r}</span></div>
-    <div class="lbl sec-head sdiv">Legend</div>
-    ${Object.keys(SCORES).map(id=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-      <span style="width:10px;height:10px;border-radius:50%;background:${C[id]};display:inline-block;flex-shrink:0"></span>
-      <span style="font-size:12px">${DN[id]}</span></div>`).join('')}`;
+  let h='<div class="lbl sec-head"><span style="color:var(--co)">01 </span>Horizontal (X) Axis</div>';
+  AK.forEach(k=>{
+    h+=`<button class="cpill${S.xAxis===k?' on':''}" ${S.yAxis===k?'disabled':''} onclick="setAx('x','${k}')">${k}</button>`;
+  });
+  h+='<div class="lbl sec-head sdiv"><span style="color:var(--co)">02 </span>Vertical (Y) Axis</div>';
+  AK.forEach(k=>{
+    h+=`<button class="cpill${S.yAxis===k?' on':''}" ${S.xAxis===k?'disabled':''} onclick="setAx('y','${k}')">${k}</button>`;
+  });
+  g('sidebar').innerHTML=h;
 }
-function setAx(xy,v){if(xy==='x')S.xAxis=v;else S.yAxis=v;rXS();rXC();}
+function setAx(xy,v){
+  if(xy==='x')S.xAxis=v; else S.yAxis=v;
+  rXS(); updateSandboxMap();
+}
 
 function rXC(){
-  const xA=AXES[S.xAxis],yA=AXES[S.yAxis],q=getQuadrants(S.xAxis,S.yAxis);
-  const W=Math.min(g('canvas').offsetWidth-40,960);
-  const H=Math.round(W*0.68);
-  const pad=40;
-  const iW=W-pad,iH=H-pad;
-  const toX=s=>Math.round(pad+4+((s+10)/20)*(iW-8));
-  const toY=s=>Math.round(4+((10-s)/20)*(iH-8));
-  let toks='';
-  Object.keys(SCORES).forEach(id=>{
-    const xs=SCORES[id][S.xAxis],ys=SCORES[id][S.yAxis];
-    const px=toX(xs),py=toY(ys),isA=id==='austin';
-    const sz=isA?22:13;
-    const ring=isA?`border:3px solid #fff;box-shadow:0 0 0 2px ${C[id]},0 0 14px ${C[id]}88;`:`border:2px solid rgba(255,255,255,0.4);`;
-    const lc=isA?'#fff':BRIGHT[id]||'#aaa';
-    const fw=isA?'700':'400';
-    const fs=isA?'9px':'8px';
-    toks+=`<div style="position:absolute;left:${px}px;top:${py}px;transform:translate(-50%,-50%);text-align:center;">
-      <div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${C[id]};${ring}margin:0 auto"></div>
-      <div style="font-family:'Space Mono',monospace;font-size:${fs};color:${lc};font-weight:${fw};margin-top:3px;white-space:nowrap;line-height:1.2">${isA?'AUSTIN':DN[id].split(' ')[0].toUpperCase()}</div>
+  const xd=AXES[S.xAxis],yd=AXES[S.yAxis];
+  const toL=s=>50+s*4,toT=s=>50-s*4;
+  const gv=[-8,-6,-4,-2,2,4,6,8].map(v=>`<line x1="${toL(v)}" y1="3" x2="${toL(v)}" y2="97" stroke="rgba(255,255,255,0.05)" stroke-width="0.2"/>`).join('');
+  const gh=[-8,-6,-4,-2,2,4,6,8].map(v=>`<line x1="3" y1="${toT(v)}" x2="97" y2="${toT(v)}" stroke="rgba(255,255,255,0.05)" stroke-width="0.2"/>`).join('');
+  const nclX=xd.s.austin,nclY=yd.s.austin;
+  const coQ=(nclY>=0?'t':'b')+(nclX>=0?'r':'l');
+  const qNames=getQuadrantNames(S.xAxis,S.yAxis);
+  const quadPositions={
+    tl:{left:'3%',top:'6%',anchor:'left'},
+    tr:{right:'3%',top:'6%',anchor:'right'},
+    bl:{left:'3%',bottom:'6%',anchor:'left'},
+    br:{right:'3%',bottom:'6%',anchor:'right'}
+  };
+  const qlabels=['tl','tr','bl','br'].map(q=>{
+    const isCo=q===coQ;
+    const pos=quadPositions[q];
+    const posStyle=pos.bottom!==undefined
+      ?(pos.anchor==='right'?`right:${pos.right};bottom:${pos.bottom}`:`left:${pos.left};bottom:${pos.bottom}`)
+      :(pos.anchor==='right'?`right:${pos.right};top:${pos.top}`:`left:${pos.left};top:${pos.top}`);
+    return `<div id="qlabel-${q}" style="position:absolute;${posStyle};pointer-events:none;text-align:${pos.anchor};z-index:20;max-width:26%">
+      <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:${isCo?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.4)'};line-height:1.4;letter-spacing:0.01em;${isCo?'text-shadow:0 0 20px rgba(159,92,73,0.7)':''}">${qNames[q]}</div>
     </div>`;
-  });
-  const ausX=SCORES.austin[S.xAxis],ausY=SCORES.austin[S.yAxis];
-  const ausQ=(ausX>=0?'r':'l')+(ausY>=0?'t':'b');
-  const qb='color:rgba(255,255,255,0.7);',qf='color:rgba(255,255,255,0.22);';
-  const qs='position:absolute;font-family:"Space Mono",monospace;font-size:8px;letter-spacing:.06em;text-transform:uppercase;max-width:85px;line-height:1.3;text-align:center;pointer-events:none;';
+  }).join('');
+  const axPills=`
+    <div id="ax-xl" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.1em;background:#fff;border-radius:7px;padding:6px 12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:25">\u2190 ${xd.l.toUpperCase()}</div>
+    <div id="ax-xr" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.1em;background:#fff;border-radius:7px;padding:6px 12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:25">${xd.r.toUpperCase()} \u2192</div>
+    <div id="ax-yt" style="position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.1em;background:#fff;border-radius:7px;padding:6px 12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:25">\u2191 ${yd.r.toUpperCase()}</div>
+    <div id="ax-yb" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.1em;background:#fff;border-radius:7px;padding:6px 12px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:25">\u2193 ${yd.l.toUpperCase()}</div>`;
+  const allDests=Object.keys(C);
+  const toks=allDests.map(d=>{
+    const col=BRIGHT[d]||'#999';
+    const isCo=d==='austin';
+    return `<div id="tok-${d}" class="map-tok" style="left:${toL(xd.s[d]||0)}%;top:${toT(yd.s[d]||0)}%">
+      <div class="tok-ring" style="color:${col};inset:${isCo?'-16px':'-11px'};opacity:${isCo?0.7:0.35}"></div>
+      <div class="tok-dot" style="background:${col};box-shadow:0 0 ${isCo?'32px':'20px'} ${col}${isCo?'99':'66'},0 0 ${isCo?'12px':'6px'} ${col}${isCo?'66':'44'};width:${isCo?'60px':'48px'};height:${isCo?'60px':'48px'};${isCo?'border:2px solid rgba(255,255,255,0.6)':''}"></div>
+      <div style="position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-family:'Inter',sans-serif;font-size:${isCo?'12px':'11px'};font-weight:${isCo?700:600};color:rgba(255,255,255,${isCo?0.98:0.88});background:rgba(20,8,4,0.85);border:1px solid rgba(${isCo?'159,92,73':'255,255,255'},${isCo?0.5:0.12});border-radius:5px;padding:3px 8px;pointer-events:none">${DN[d]}</div>
+    </div>`;
+  }).join('');
   g('canvas').innerHTML=`<div class="fadein">
-    <div style="margin-bottom:12px">
-      <span class="axis-chip">X: ${S.xAxis}</span>
-      <span class="axis-chip">Y: ${S.yAxis}</span>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="card" id="chip-x" style="padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:8px"><span class="lbl">X \u2192</span><b>${S.xAxis}</b><span style="color:var(--faint);font-size:10px">${xd.l} \u2194 ${xd.r}</span></div>
+      <div class="card" id="chip-y" style="padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:8px"><span class="lbl">Y \u2191</span><b>${S.yAxis}</b><span style="color:var(--faint);font-size:10px">${yd.l} \u2194 ${yd.r}</span></div>
     </div>
-    <div style="position:relative;width:${W}px;height:${H}px;background:#1A0A07;border-radius:14px;overflow:hidden">
-      <svg style="position:absolute;inset:0;pointer-events:none" width="${W}" height="${H}">
-        <line x1="${pad}" y1="${iH/2+4}" x2="${iW}" y2="${iH/2+4}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-        <line x1="${pad+(iW-pad)/2}" y1="4" x2="${pad+(iW-pad)/2}" y2="${iH}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-      </svg>
-      <div style="${qs}${ausQ==='rt'?qb:qf}top:8px;right:${pad+6}px">${q.tr}</div>
-      <div style="${qs}${ausQ==='lt'?qb:qf}top:8px;left:${pad+6}px">${q.tl}</div>
-      <div style="${qs}${ausQ==='rb'?qb:qf}bottom:${pad+8}px;right:${pad+6}px">${q.br}</div>
-      <div style="${qs}${ausQ==='lb'?qb:qf}bottom:${pad+8}px;left:${pad+6}px">${q.bl}</div>
-      ${toks}
-      <div style="position:absolute;left:0;top:0;bottom:${pad}px;width:${pad}px;background:rgba(159,92,73,0.35);display:flex;align-items:center;justify-content:center">
-        <span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.65)">${S.yAxis}</span>
+    <div style="display:flex;flex-direction:column;gap:0;margin-bottom:16px">
+      <div style="display:flex;gap:0">
+        <div id="ybar" style="width:44px;flex-shrink:0;background:rgba(159,92,73,0.18);border-radius:10px 0 0 0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(159,92,73,0.4);border-right:none;border-bottom:none">
+          <span style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.18em;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap">${S.yAxis}</span>
+        </div>
+        <div style="position:relative;background:#1A0A07;border-radius:0 16px 16px 0;aspect-ratio:4/3;flex:1;overflow:visible;box-shadow:0 8px 32px rgba(0,0,0,0.25),0 0 0 1px rgba(159,92,73,0.2)">
+          <div style="position:absolute;inset:0;border-radius:0 16px 16px 16px;overflow:hidden;background:linear-gradient(145deg,#2A0E08 0%,#1A0A07 60%,#0F0503 100%)">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">${gv}${gh}<line x1="50" y1="3" x2="50" y2="97" stroke="rgba(159,92,73,0.2)" stroke-width="0.35" stroke-dasharray="1 0.6"/><line x1="3" y1="50" x2="97" y2="50" stroke="rgba(159,92,73,0.2)" stroke-width="0.35" stroke-dasharray="1 0.6"/></svg>
+            ${axPills}
+          </div>
+          ${qlabels}
+          ${toks}
+        </div>
       </div>
-      <div style="position:absolute;left:0;right:0;bottom:0;height:${pad}px;background:rgba(159,92,73,0.35);display:flex;align-items:center;justify-content:center">
-        <span style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.65)">${S.xAxis}</span>
+      <div style="display:flex">
+        <div style="width:44px;flex-shrink:0;background:rgba(159,92,73,0.18);border-radius:0 0 0 10px;border:1px solid rgba(159,92,73,0.4);border-top:none;border-right:none"></div>
+        <div id="xbar" style="flex:1;height:44px;background:rgba(159,92,73,0.18);border-radius:0 0 10px 0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(159,92,73,0.4);border-top:none;border-left:none">
+          <span style="font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:#0E1111;text-transform:uppercase;letter-spacing:.18em;white-space:nowrap">${S.xAxis}</span>
+        </div>
       </div>
-      <div style="position:absolute;top:6px;left:${pad+6}px;font-family:'Space Mono',monospace;font-size:7px;color:rgba(255,255,255,0.35)">${yA.r}</div>
-      <div style="position:absolute;bottom:${pad+6}px;left:${pad+6}px;font-family:'Space Mono',monospace;font-size:7px;color:rgba(255,255,255,0.35)">${yA.l}</div>
-      <div style="position:absolute;bottom:${pad+6}px;left:${pad+6}px;font-family:'Space Mono',monospace;font-size:7px;color:rgba(255,255,255,0.35)">${xA.l}</div>
-      <div style="position:absolute;bottom:${pad+6}px;right:6px;font-family:'Space Mono',monospace;font-size:7px;color:rgba(255,255,255,0.35)">${xA.r}</div>
     </div>
+    <p class="note">Axis scores are MMGY\u2019s directional assessment (scale \u221210 to +10). Austin shown as the anchor. Designed to prompt discussion, not define fact.</p>
   </div>`;
 }
+
+function updateSandboxMap(){
+  const xd=AXES[S.xAxis],yd=AXES[S.yAxis];
+  const toL=s=>50+s*4,toT=s=>50-s*4;
+  Object.keys(C).forEach(d=>{
+    const t=g(`tok-${d}`);
+    if(t){t.style.left=`${toL(xd.s[d]||0)}%`;t.style.top=`${toT(yd.s[d]||0)}%`;}
+  });
+  const coQ=(yd.s.austin>=0?'t':'b')+(xd.s.austin>=0?'r':'l');
+  const qNames=getQuadrantNames(S.xAxis,S.yAxis);
+  const quadAligns={tl:'left',tr:'right',bl:'left',br:'right'};
+  ['tl','tr','bl','br'].forEach(q=>{
+    const el=g(`qlabel-${q}`);
+    if(!el)return;
+    const isCo=q===coQ;
+    el.style.textAlign=quadAligns[q];
+    el.innerHTML=`<div style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:${isCo?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.4)'};line-height:1.4;letter-spacing:0.01em;${isCo?'text-shadow:0 0 20px rgba(159,92,73,0.7)':''}">${qNames[q]}</div>`;
+  });
+  const xl=g('ax-xl'),xr=g('ax-xr'),yt=g('ax-yt'),yb=g('ax-yb');
+  if(xl)xl.textContent=`\u2190 ${xd.l.toUpperCase()}`;
+  if(xr)xr.textContent=`${xd.r.toUpperCase()} \u2192`;
+  if(yt)yt.textContent=`\u2191 ${yd.r.toUpperCase()}`;
+  if(yb)yb.textContent=`\u2193 ${yd.l.toUpperCase()}`;
+  const cx=g('chip-x'),cy=g('chip-y');
+  if(cx)cx.innerHTML=`<span class="lbl">X \u2192</span><b>${S.xAxis}</b><span style="color:var(--faint);font-size:10px">${xd.l} \u2194 ${xd.r}</span>`;
+  if(cy)cy.innerHTML=`<span class="lbl">Y \u2191</span><b>${S.yAxis}</b><span style="color:var(--faint);font-size:10px">${yd.l} \u2194 ${yd.r}</span>`;
+  const ybar=g('ybar'),xbar=g('xbar');
+  if(ybar)ybar.querySelector('span').textContent=S.yAxis;
+  if(xbar)xbar.querySelector('span').textContent=S.xAxis;
+}
+
 
 setTab('swot');
 </script>
